@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>SSL Checker!</title>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Include eel.js - note this file doesn't exist in the 'web' directory -->
+    <script type="text/javascript" src="/eel.js"></script>
+    <script>
+      //get messages from python
+      eel.expose(setStatus);
+      function setStatus(message) {
+        document.getElementById("status").innerHTML += "<br>" + message;
+      }
+    </script>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <div class="header">
+      <h1 class="header-title">SSL Status Checker</h1>
+    </div>
+    <div class="container">
+      <input
+        type="url"
+        class="addUrlInput"
+        id="url"
+        placeholder="Enter URL https://example.com"
+      />
+      <input
+        type="button"
+        class="addButton"
+        id="add"
+        onclick="addUrl()"
+        value="ADD"
+      />
+      <div class="table-wrapper">
+        <input
+          type="text"
+          id="searchInput"
+          onkeyup="tableSearch()"
+          placeholder="Search for URL.."
+        />
+        <table class="urltable" id="urltable">
+          <thead>
+            <tr>
+              <th>URL</th>
+              <th>Status</th>
+              <th>Expiring On</th>
+              <th>Last Checked On</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="urlTbody"></tbody>
+        </table>
+      </div>
+      <input
+        type="button"
+        class="addButton"
+        id="check"
+        onclick="checkAllURLs()"
+        value="Check All"
+      />
+
+      <div id="status">Load complete</div>
+      <div style="text-align: center">
+        Created By
+        <a href="https://prashantkandel.com/" target="_blank"
+          >Prashant Kandel</a
+        >
+      </div>
+    </div>
+
+    <script>
+      //statusbar
+      status = document.getElementById("status");
+
+      //function to call python function to ADD URL in db
+      async function addUrl() {
+        url = document.getElementById("url").value;
+        document.getElementById("add").disabled = true;
+        reply = await eel.addURL(url)();
+        status.innerHTML += "<br>" + reply;
+        loaddata();
+        document.getElementById("add").disabled = false;
+        document.getElementById("url").value = "";
+      }
+
+      //function to populate data in table
+      function populate(data) {
+        document.getElementById("urlTbody").remove();
+        table = document.getElementById("urltable");
+        tbody = document.createElement("tbody");
+        tbody.setAttribute("id", "urlTbody");
+        for (row in data) {
+          tr = document.createElement("tr");
+          for (col in data[row]) {
+            td = document.createElement("td");
+            td.innerHTML = data[row][col];
+            tr.appendChild(td);
+          }
+          checkButton = document.createElement("button");
+          checkButton.innerHTML = "Check";
+          checkButton.setAttribute(
+            "onclick",
+            "checkURL('" + data[row][0] + "')"
+          );
+
+          deleteButton = document.createElement("button");
+          deleteButton.innerHTML = "Delete";
+          deleteButton.setAttribute(
+            "onclick",
+            "deleteURL('" + data[row][0] + "')"
+          );
+
+          td = document.createElement("td");
+          td.appendChild(checkButton);
+          td.appendChild(deleteButton);
+          tr.appendChild(td);
+          tbody.appendChild(tr);
+        }
+        table.appendChild(tbody);
+      }
+
+      //function to call python to get table data
+      async function loaddata() {
+        data = await eel.loadURLs()();
+        if (data.length > 0) {
+          populate(data);
+        } else {
+          document.getElementById("urlTbody").innerHTML = "";
+          status.innerHTML += "<br>" + "no data found";
+        }
+      }
+
+      //function to call python to delete url data
+      async function deleteURL(url) {
+        status.innerHTML += "<br>" + url + "delete";
+        await eel.deleteURL(url);
+        loaddata();
+        status.innerHTML += "<br>" + "Deleted: " + url;
+      }
+
+      //check expiry date of URLS
+      async function checkURL(url) {
+        await eel.checkURL(url);
+        loaddata();
+      }
+      //check expiry date for all the urls
+      async function checkAllURLs() {
+        document.getElementById("check").disabled = true;
+        document.getElementById("add").disabled = true;
+        await eel.checkAllURLs();
+        loaddata();
+        document.getElementById("check").disabled = false;
+        document.getElementById("add").disabled = false;
+      }
+      //function to search inside table
+      function tableSearch() {
+        var input, filter, table, tr, td, i, txtValue;
+        input = document.getElementById("searchInput");
+        filter = input.value.toUpperCase();
+        table = document.getElementById("urltable");
+        tr = table.getElementsByTagName("tr");
+
+        // Loop through all table rows, and hide those who don't match the search query
+        for (i = 0; i < tr.length; i++) {
+          td = tr[i].getElementsByTagName("td")[0];
+          if (td) {
+            txtValue = td.textContent || td.innerText;
+            if (txtValue.toUpperCase().indexOf(filter) > -1) {
+              tr[i].style.display = "";
+            } else {
+              tr[i].style.display = "none";
+            }
+          }
+        }
+      }
+
+      window.onload = function () {
+        loaddata();
+      };
+    </script>
+  </body>
+</html>
