@@ -6,12 +6,14 @@ install using exe installer inside dist folder
 
 ## Build From Code
 >python version used: 3.10
-Initial setup:
+
+### Initial setup:
 Install all the dependencies:
 
- > pip install eel
- > pip install validators
+` pip install eel
+ pip install validators`
  
  run the ssl_expiry_date_checker.py to run the GUI app
- >python ssl_expiry_date_checker.py
+ 
+`python ssl_expiry_date_checker.py`
  
