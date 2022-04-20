@@ -10,8 +10,9 @@ install using exe installer inside exe installer folder
 ### Initial setup:
 Install all the dependencies:
 
-` pip install eel
- pip install validators`
+`pip install eel`
+
+`pip install validators`
  
  run the ssl_expiry_date_checker.py to run the GUI app
  
