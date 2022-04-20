@@ -2,7 +2,7 @@
 A python eel based GUI app the keep track of ssl certificates of your site
 
 ## Install using exe installer
-install using exe installer inside dist folder
+install using exe installer inside exe installer folder
 
 ## Build From Code
 >python version used: 3.10
